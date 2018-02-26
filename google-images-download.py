@@ -23,72 +23,37 @@ import argparse
 import ssl
 import datetime
 
-# Taking command line arguments from users
-parser = argparse.ArgumentParser()
-parser.add_argument('-k', '--keywords', help='delimited list input', type=str, required=False)
-parser.add_argument('-sk', '--suffix_keywords', help='comma separated additional words added to main keyword', type=str, required=False)
-parser.add_argument('-l', '--limit', help='delimited list input', type=str, required=False)
-parser.add_argument('-f', '--format', help='download images with specific format', type=str, required=False,
-                    choices=['jpg', 'gif', 'png', 'bmp', 'svg', 'webp', 'ico'])
-parser.add_argument('-u', '--url', help='search with google image URL', type=str, required=False)
-parser.add_argument('-x', '--single_image', help='downloading a single image from URL', type=str, required=False)
-parser.add_argument('-o', '--output_directory', help='download images in a specific directory', type=str, required=False)
-parser.add_argument('-d', '--delay', help='delay in seconds to wait between downloading two images', type=str, required=False)
-parser.add_argument('-c', '--color', help='filter on color', type=str, required=False,
-                    choices=['red', 'orange', 'yellow', 'green', 'teal', 'blue', 'purple', 'pink', 'white', 'gray', 'black', 'brown'])
-parser.add_argument('-ct', '--color_type', help='filter on color', type=str, required=False,
-                    choices=['full-color', 'black-and-white', 'transparent'])
-parser.add_argument('-r', '--usage_rights', help='usage rights', type=str, required=False,
-                    choices=['labled-for-reuse-with-modifications','labled-for-reuse','labled-for-noncommercial-reuse-with-modification','labled-for-nocommercial-reuse'])
-parser.add_argument('-s', '--size', help='image size', type=str, required=False,
-                    choices=['large','medium','icon'])
-parser.add_argument('-t', '--type', help='image type', type=str, required=False,
-                    choices=['face','photo','clip-art','line-drawing','animated'])
-parser.add_argument('-w', '--time', help='image age', type=str, required=False,
-                    choices=['past-24-hours','past-7-days'])
-parser.add_argument('-a', '--aspect_ratio', help='comma separated additional words added to keywords', type=str, required=False,
-                    choices=['tall', 'square', 'wide', 'panoramic'])
-parser.add_argument('-si', '--similar_images', help='downloads images very similar to the image URL you provide', type=str, required=False)
-parser.add_argument('-ss', '--specific_site', help='downloads images that are indexed from a specific website', type=str, required=False)
+def arguments():
+    # Taking command line arguments from users
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-k', '--keywords', help='delimited list input', type=str, required=False)
+    parser.add_argument('-sk', '--suffix_keywords', help='comma separated additional words added to main keyword', type=str, required=False)
+    parser.add_argument('-l', '--limit', help='delimited list input', type=str, required=False)
+    parser.add_argument('-f', '--format', help='download images with specific format', type=str, required=False,
+                        choices=['jpg', 'gif', 'png', 'bmp', 'svg', 'webp', 'ico'])
+    parser.add_argument('-u', '--url', help='search with google image URL', type=str, required=False)
+    parser.add_argument('-x', '--single_image', help='downloading a single image from URL', type=str, required=False)
+    parser.add_argument('-o', '--output_directory', help='download images in a specific directory', type=str, required=False)
+    parser.add_argument('-d', '--delay', help='delay in seconds to wait between downloading two images', type=str, required=False)
+    parser.add_argument('-c', '--color', help='filter on color', type=str, required=False,
+                        choices=['red', 'orange', 'yellow', 'green', 'teal', 'blue', 'purple', 'pink', 'white', 'gray', 'black', 'brown'])
+    parser.add_argument('-ct', '--color_type', help='filter on color', type=str, required=False,
+                        choices=['full-color', 'black-and-white', 'transparent'])
+    parser.add_argument('-r', '--usage_rights', help='usage rights', type=str, required=False,
+                        choices=['labled-for-reuse-with-modifications','labled-for-reuse','labled-for-noncommercial-reuse-with-modification','labled-for-nocommercial-reuse'])
+    parser.add_argument('-s', '--size', help='image size', type=str, required=False,
+                        choices=['large','medium','icon'])
+    parser.add_argument('-t', '--type', help='image type', type=str, required=False,
+                        choices=['face','photo','clip-art','line-drawing','animated'])
+    parser.add_argument('-w', '--time', help='image age', type=str, required=False,
+                        choices=['past-24-hours','past-7-days'])
+    parser.add_argument('-a', '--aspect_ratio', help='comma separated additional words added to keywords', type=str, required=False,
+                        choices=['tall', 'square', 'wide', 'panoramic'])
+    parser.add_argument('-si', '--similar_images', help='downloads images very similar to the image URL you provide', type=str, required=False)
+    parser.add_argument('-ss', '--specific_site', help='downloads images that are indexed from a specific website', type=str, required=False)
+    
+    args = parser.parse_args()
 
-args = parser.parse_args()
-
-#Initialization and Validation of user arguments
-if args.keywords:
-    search_keyword = [str(item) for item in args.keywords.split(',')]
-
-#Additional words added to keywords
-if args.suffix_keywords:
-    suffix_keywords = [" " + str(sk) for sk in args.suffix_keywords.split(',')]
-else:
-    suffix_keywords = []
-
-# Setting limit on number of images to be downloaded
-if args.limit:
-    limit = int(args.limit)
-    if int(args.limit) >= 100:
-        limit = 100
-else:
-    limit = 100
-
-# If single_image or url argument not present then keywords is mandatory argument
-if args.single_image is None and args.url is None and args.similar_images is None and args.keywords is None:
-            parser.error('Keywords is a required argument!')
-
-# If this argument is present, set the custom output directory
-if args.output_directory:
-    main_directory = args.output_directory
-else:
-    main_directory = "downloads"
-
-# Set the delay parameter if this argument is present
-if args.delay:
-    try:
-        delay_time = int(args.delay)
-    except ValueError:
-        parser.error('Delay parameter should be an integer!')
-else:
-    delay_time = 0
 #------ Initialization Complete ------#
 
 # Downloading entire Web Document (Raw Page Content)
@@ -227,10 +192,9 @@ def build_url_parameters():
     return built_url
 
 #function to download single image
-def single_image():
-    url = args.single_image
+def single_image(output_directory, url):
     try:
-        os.makedirs(main_directory)
+        os.makedirs(output_directory)
     except OSError as e:
         if e.errno != 17:
             raise
@@ -243,9 +207,9 @@ def single_image():
     if '?' in image_name:
         image_name = image_name[:image_name.find('?')]
     if ".jpg" in image_name or ".gif" in image_name or ".png" in image_name or ".bmp" in image_name or ".svg" in image_name or ".webp" in image_name or ".ico" in image_name:
-        output_file = open(main_directory + "/" + image_name, 'wb')
+        output_file = open(output_directory + "/" + image_name, 'wb')
     else:
-        output_file = open(main_directory + "/" + image_name + ".jpg", 'wb')
+        output_file = open(output_directory + "/" + image_name + ".jpg", 'wb')
         image_name = image_name + ".jpg"
 
     data = response.read()
@@ -255,11 +219,20 @@ def single_image():
     return
 
 
-def bulk_download(search_keyword,suffix_keywords,limit,main_directory,delay_time):
+def bulk_download(search_keyword, 
+                  suffix_keywords, 
+                  limit, 
+                  output_directory, 
+                  delay_time, 
+                  color=None, 
+                  url=None,
+                  similar_images=None,
+                  specific_site=None,
+                  format=None):
     errorCount = 0
-    if args.url:
+    if url:
         search_keyword = [str(datetime.datetime.now()).split('.')[0]]
-    if args.similar_images:
+    if similar_images:
         search_keyword = [str(datetime.datetime.now()).split('.')[0]]
 
     # appending a dummy value to Suffix Keywords array if it is blank
@@ -274,20 +247,20 @@ def bulk_download(search_keyword,suffix_keywords,limit,main_directory,delay_time
             print(iteration)
             print("Evaluating...")
             search_term = search_keyword[i] + sky
-            dir_name = search_term + ('-' + args.color if args.color else '')
+            dir_name = search_term + ('-' + color if color else '')
 
             # make a search keyword  directory
             try:
-                if not os.path.exists(main_directory):
-                    os.makedirs(main_directory)
+                if not os.path.exists(output_directory):
+                    os.makedirs(output_directory)
                     time.sleep(0.2)
                     path = str(dir_name)
-                    sub_directory = os.path.join(main_directory, path)
+                    sub_directory = os.path.join(output_directory, path)
                     if not os.path.exists(sub_directory):
                         os.makedirs(sub_directory)
                 else:
                     path = str(dir_name)
-                    sub_directory = os.path.join(main_directory, path)
+                    sub_directory = os.path.join(output_directory, path)
                     if not os.path.exists(sub_directory):
                         os.makedirs(sub_directory)
             except OSError as e:
@@ -299,14 +272,14 @@ def bulk_download(search_keyword,suffix_keywords,limit,main_directory,delay_time
             params = build_url_parameters()
             # color_param = ('&tbs=ic:specific,isc:' + args.color) if args.color else ''
             # check the args and choose the URL
-            if args.url:
-                url = args.url
-            elif args.similar_images:
+            if url is not None:
+                pass
+            elif similar_images is not None:
                 keywordem = similar_images()
                 url = 'https://www.google.com/search?q=' + keywordem + '&espv=2&biw=1366&bih=667&site=webhp&source=lnms&tbm=isch&sa=X&ei=XosDVaCXD8TasATItgE&ved=0CAcQ_AUoAg'
-            elif args.specific_site:
+            elif specific_site is not None:
                 url = 'https://www.google.com/search?q=' + quote(
-                    search_term) + 'site:' + args.specific_site + '&espv=2&biw=1366&bih=667&site=webhp&source=lnms&tbm=isch' + params + '&sa=X&ei=XosDVaCXD8TasATItgE&ved=0CAcQ_AUoAg'
+                    search_term) + 'site:' + specific_site + '&espv=2&biw=1366&bih=667&site=webhp&source=lnms&tbm=isch' + params + '&sa=X&ei=XosDVaCXD8TasATItgE&ved=0CAcQ_AUoAg'
             else:
                 url = 'https://www.google.com/search?q=' + quote(
                     search_term) + '&espv=2&biw=1366&bih=667&site=webhp&source=lnms&tbm=isch' + params + '&sa=X&ei=XosDVaCXD8TasATItgE&ved=0CAcQ_AUoAg'
@@ -336,16 +309,16 @@ def bulk_download(search_keyword,suffix_keywords,limit,main_directory,delay_time
                         if '?' in image_name:
                             image_name = image_name[:image_name.find('?')]
                         if ".jpg" in image_name or ".JPG" in image_name or ".gif" in image_name or ".png" in image_name or ".bmp" in image_name or ".svg" in image_name or ".webp" in image_name or ".ico" in image_name:
-                            output_file = open(main_directory + "/" + dir_name + "/" + str(success_count + 1) + ". " + image_name, 'wb')
+                            output_file = open(output_directory + "/" + dir_name + "/" + str(success_count + 1) + ". " + image_name, 'wb')
                         else:
-                            if args.format:
+                            if format is not None:
                                 output_file = open(
-                                    main_directory + "/" + dir_name + "/" + str(success_count + 1) + ". " + image_name + "." + args.format,
+                                    output_directory + "/" + dir_name + "/" + str(success_count + 1) + ". " + image_name + "." + format,
                                     'wb')
-                                image_name = image_name + "." + args.format
+                                image_name = image_name + "." + format
                             else:
                                 output_file = open(
-                                    main_directory + "/" + dir_name + "/" + str(success_count + 1) + ". " + image_name + ".jpg", 'wb')
+                                    output_directory + "/" + dir_name + "/" + str(success_count + 1) + ". " + image_name + ".jpg", 'wb')
                                 image_name = image_name + ".jpg"
 
                         data = response.read()
@@ -382,7 +355,7 @@ def bulk_download(search_keyword,suffix_keywords,limit,main_directory,delay_time
                     print("IOError on an image...trying next one..." + " Error: " + str(e))
                     k = k + 1
 
-                if args.delay:
+                if delay_time is not None:
                     time.sleep(int(delay_time))
 
             if success_count < limit:
@@ -390,18 +363,66 @@ def bulk_download(search_keyword,suffix_keywords,limit,main_directory,delay_time
             i = i + 1
     return errorCount
 
-#------------- Main Program -------------#
-if args.single_image:       #Download Single Image using a URL
-    single_image()
-else:                       # or download multiple images based on keywords/keyphrase search
-    t0 = time.time()  # start the timer
-    errorCount = bulk_download(search_keyword,suffix_keywords,limit,main_directory,delay_time)
+if __name__ == '__main__':
+    args, parser = arguments()
+    cwd = os.path.dirname(os.path.realpath(__file__))
 
-    print("\nEverything downloaded!")
-    print("Total Errors: " + str(errorCount) + "\n")
-    t1 = time.time()  # stop the timer
-    total_time = t1 - t0  # Calculating the total time required to crawl, find and download all the links of 60,000 images
-    print("Total time taken: " + str(total_time) + " Seconds")
-#--------End of the main program --------#
-
-# In[ ]:
+    #Initialization and Validation of user arguments
+    if args.keywords:
+        search_keyword = [str(item) for item in args.keywords.split(',')]
+    
+    #Additional words added to keywords
+    if args.suffix_keywords:
+        suffix_keywords = [" " + str(sk) for sk in args.suffix_keywords.split(',')]
+    else:
+        suffix_keywords = []
+    
+    # Setting limit on number of images to be downloaded
+    if args.limit:
+        limit = int(args.limit)
+        if int(args.limit) >= 100:
+            limit = 100
+    else:
+        limit = 100
+    
+    # If single_image or url argument not present then keywords is mandatory argument
+    if args.single_image is None and args.url is None and args.similar_images is None and args.keywords is None:
+                parser.error('Keywords is a required argument!')
+    
+    # If this argument is present, set the custom output directory
+    if args.output_directory:
+        output_directory = os.path.join(cwd, args.output_directory)
+    else:
+        output_directory = os.path.join(cwd, 'downloads')
+    
+    # Set the delay parameter if this argument is present
+    if args.delay:
+        try:
+            delay_time = int(args.delay)
+        except ValueError:
+            parser.error('Delay parameter should be an integer!')
+    else:
+        delay_time = 0
+    if args.single_image:       #Download Single Image using a URL
+        single_image_url = args.single_image
+        single_image(output_directory=output_directory, url = single_image_url)
+    else:                       # or download multiple images based on keywords/keyphrase search
+        t0 = time.time()  # start the timer
+        # TODO(dstone): just make this take args. But the code I inherited is totally whack anyway, so it's a big hassle
+        # to refactor bulk_download to take args
+        errorCount = bulk_download(search_keyword, 
+                                   suffix_keywords, 
+                                   limit, 
+                                   output_directory, 
+                                   delay_time=delay_time,
+                                   color=args.color, 
+                                   url=args.url,
+                                   similar_images=args.similar_images,
+                                   specific_site=args.specific_site,
+                                   format=args.format)
+    
+        print("\nEverything downloaded!")
+        print("Total Errors: " + str(errorCount) + "\n")
+        t1 = time.time()  # stop the timer
+        total_time = t1 - t0  # Calculating the total time required to crawl, find and download all the links of 60,000 images
+        print("Total time taken: " + str(total_time) + " Seconds")
